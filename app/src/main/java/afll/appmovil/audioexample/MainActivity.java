@@ -1,8 +1,10 @@
 package afll.appmovil.audioexample;
 
-
+import android.media.AudioFormat;
+import android.media.AudioManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import be.tarsos.dsp.io.TarsosDSPAudioFormat;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
@@ -21,6 +23,7 @@ import be.tarsos.dsp.pitch.PitchProcessor;
 
 
 
+
 public class MainActivity extends AppCompatActivity {
 
 
@@ -36,8 +39,13 @@ public class MainActivity extends AppCompatActivity {
             ActivityCompat .requestPermissions(MainActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.RECORD_AUDIO}, 1000);
         }
 
+
+
         noteText = (TextView) findViewById(R.id.noteText);
         pitchText = (TextView) findViewById(R.id.pitchText);
+
+        TarsosDSPAudioFormat myFormat = new TarsosDSPAudioFormat(44100,16,1,true,true);
+        AndroidAudioPlayer myPlayer = new AndroidAudioPlayer(myFormat,44100,AudioManager.STREAM_MUSIC);
 
         AudioDispatcher dispatcher = AudioDispatcherFactory.fromDefaultMicrophone(22050,1024,0);
         PitchDetectionHandler pdh = new PitchDetectionHandler() {
@@ -54,6 +62,9 @@ public class MainActivity extends AppCompatActivity {
         };
         AudioProcessor pitchProcessor = new PitchProcessor(PitchProcessor.PitchEstimationAlgorithm.FFT_YIN, 22050, 1024, pdh);
         dispatcher.addAudioProcessor(pitchProcessor);
+        dispatcher.addAudioProcessor(myPlayer);
+
+
 
         Thread audioThread = new Thread(dispatcher, "Audio Thread");
         audioThread.start();
